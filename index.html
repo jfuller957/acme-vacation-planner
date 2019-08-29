@@ -19,11 +19,17 @@
 
   const API = 'https://acme-users-api-rev.herokuapp.com/api';
 
-  const Vacations = ({ startDate, endDate }) => {
+  const Vacations = ({ vacations }) => {
     return (
-      <form>
-
-      </form>
+      <ul>
+        {
+          vacations.map( vacation =>
+            <li key={ vacation.id }>
+              { vacation.stateDate } <br /> 'to' <br /> { vacation.endDate }
+            </li>
+          )
+        }
+      </ul>
     )
   }
 
@@ -59,9 +65,25 @@
   class App extends Component {
     constructor(){
       super();
+      this.state = {
+        user: {},
+        vacations: []
+      };
     }
-    render(){
-      return <hr />;
+    async componentDidMount(){
+          const user = await fetchUser();
+          const vacations = (await axios.get(`${API}/users/${ user.id }/vacations`)).data;
+          this.setState({ vacations, user });
+        }
+    render() {
+      const { user, vacations } = this.state;
+
+      return (
+        <div>
+          <h1>Acme Vacation Planner for { user.id ? user.fullName : '' }</h1>
+          <hr />
+        </div>
+      );
     }
   }
   const root = document.querySelector('#root');
