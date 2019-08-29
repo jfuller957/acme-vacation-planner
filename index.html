@@ -36,7 +36,7 @@
 
 
   class VacationBuilder extends Component {
-    constructor(){
+    constructor({ vacations }){
       super();
       this.state = {
         startDate: '',
@@ -45,19 +45,21 @@
       this.create = this.create.bind(this);
     }
     create(){
+      console.log(this.props);
       this.props.create({ startDate: this.state.startDate, endDate: this.state.endDate })
-        .then(()=> this.prop.history.push('/vacations'));
+        .then(()=> this.props.history.push('/vacations'));
     }
     render() {
       const { startDate, endDate } = this.state;
       const { create }  = this;
       return (
+
         <form onSubmit = { ev=> ev.preventDefault() }>
           <input value={ startDate } placeholder='Vacation State Date' onChange={ (ev)=> this.setState({ startDate: ev.target.value}) } />
           <input value={ endDate } placeholder='Vacation End Date' onChange={ (ev)=> this.setState({ endDate: ev.target.value}) } />
           <button disabled={ !startDate } onClick={ create }>Create Vacation</button>
         </form>
-      )
+      );
     }
   }
 
@@ -98,7 +100,7 @@
           this.setState({ vacations, user });
         }
     async create(vacation){
-      const created = (await axios.post(`${API}/users/${this.state.user.id}/vacations`, note)).data;
+      const created = (await axios.post(`${API}/users/${this.state.user.id}/vacations`, vacation)).data;
       const vacations = [...this.state.vacations, created ];
       this.setState({ vacations });
     }
@@ -108,7 +110,7 @@
       return (
         <div>
           <h1>Acme Vacation Planner for { user.id ? user.fullName : '' }</h1>
-          <VacationBuilder user={ user } vacations={ vacations }/>
+          <VacationBuilder user={ user } vacations={ vacations } />
           <Vacations user={ user } vacations={ vacations } />
 
           <hr />
