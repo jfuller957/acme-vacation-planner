@@ -21,7 +21,7 @@
 
   const Vacations = ({ vacations }) => {
     return (
-      <ul>
+      <ul> <strong>Vacations Scheduled ({vacations.length})</strong>
         {
           vacations.map( vacation =>
             <li key={ vacation.id }>
@@ -81,6 +81,9 @@
       return (
         <div>
           <h1>Acme Vacation Planner for { user.id ? user.fullName : '' }</h1>
+
+          <Vacations user={ user } vacations={ vacations } />
+
           <hr />
         </div>
       );
