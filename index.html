@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <script src="https://unpkg.com/react@16/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
@@ -26,6 +26,7 @@
           vacations.map( vacation =>
             <li key={ vacation.id }>
               { vacation.stateDate } <br /> 'to' <br /> { vacation.endDate }
+              <button onClick={ ()=> destroy(note)}>Remove</button>
             </li>
           )
         }
@@ -41,7 +42,22 @@
         startDate: '',
         endDate: ''
       };
-      this.onUpdate = this.onUpdate.bind(this);
+      this.create = this.create.bind(this);
+    }
+    create(){
+      this.props.create({ startDate: this.state.startDate, endDate: this.state.endDate })
+        .then(()=> this.prop.history.push('/vacations'));
+    }
+    render() {
+      const { startDate, endDate } = this.state;
+      const { create }  = this;
+      return (
+        <form onSubmit = { ev=> ev.preventDefault() }>
+          <input value={ startDate } placeholder='Vacation State Date' onChange={ (ev)=> this.setState({ startDate: ev.target.value}) } />
+          <input value={ endDate } placeholder='Vacation End Date' onChange={ (ev)=> this.setState({ endDate: ev.target.value}) } />
+          <button disabled={ !startDate } onClick={ create }>Create Vacation</button>
+        </form>
+      )
     }
   }
 
@@ -69,19 +85,30 @@
         user: {},
         vacations: []
       };
+      this.create = this.create.bind(this);
+      this.destroy = this.destroy.bind(this);
     }
+    async destroy(vacation){
+          await axios.delete(`${API}/users/${this.state.user.id}/vacations/${vacation.id}`);
+          this.setState({ vacations : this.state.vacations.filter( _vacation => _vacation.id !== vacation.id)});
+        }
     async componentDidMount(){
           const user = await fetchUser();
           const vacations = (await axios.get(`${API}/users/${ user.id }/vacations`)).data;
           this.setState({ vacations, user });
         }
+    async create(vacation){
+      const created = (await axios.post(`${API}/users/${this.state.user.id}/vacations`, note)).data;
+      const vacations = [...this.state.vacations, created ];
+      this.setState({ vacations });
+    }
     render() {
-      const { user, vacations } = this.state;
-
+      const { user, vacations, vacationBuilder } = this.state;
+      const { create, destroy } = this;
       return (
         <div>
           <h1>Acme Vacation Planner for { user.id ? user.fullName : '' }</h1>
-
+          <VacationBuilder user={ user } vacations={ vacations }/>
           <Vacations user={ user } vacations={ vacations } />
 
           <hr />
